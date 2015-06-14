@@ -1,0 +1,54 @@
+---
+title: "Activity Markdown Report"
+output: html_document
+---
+
+This code loads in and formats the data.
+
+```{r loaddata}
+  activity_data <- read.csv(unz("activity.zip", "activity.csv"))
+  activity_data$date <- as.Date(activity_data$date, format="%Y-%m-%d")
+```
+
+*Question 1*
+
+Here is the code to produce the histogram of steps taken each day, as well as calculate the mean and median of steps taken each day.
+
+```{r question1}
+  require(ggplot2)
+  clean_activity_data <- activity_data[complete.cases(activity_data), ]
+  sums <- as.numeric(tapply(clean_activity_data$steps, clean_activity_data$date, FUN=sum))
+  histo <- qplot(sums, geom='histogram', fill=..count.., xlab="Total Steps", ylab="Number of Days")
+  sums_mean <- mean(sums)
+  sums_median <- median(sums)
+```
+
+Here is the resulting histogram:
+
+```{r histogram, echo=FALSE}
+  histo
+```
+
+The mean number of steps taken each day was **`r sums_mean`**.
+
+The median number was **`r sums_median`**.
+
+*Question 2*
+
+Here is the code for the time series plot of the average daily activity patterns:
+
+```{r avg_daily_activity}
+  means <- aggregate(steps ~ interval, clean_activity_data, mean)
+  timeSeries <- ggplot(means, aes(x=interval, y=steps), xlab="Interval", ylab="Avg. Number of Steps Taken") + geom_line()
+  highest <- means[which.max(means$steps),]
+  timeSeries <- timeSeries + geom_point(data=highest, color='red', size=4)
+  timeSeries <- timeSeries + geom_text(aes((highest[1,1] + 700), highest[1,2], label=paste("Most Active Interval is #", as.character(highest[1,1]))))
+```
+
+Here is the resulting time series plot. This plot also addresses which interval has the highest average activity.
+
+```{r timeSeries, echo=FALSE}
+  timeSeries
+```
+
+
