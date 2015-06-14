@@ -39,6 +39,8 @@ The mean number of steps taken each day was **1.0766189\times 10^{4}**.
 
 The median number was **1.0765\times 10^{4}**.
 
+Sorry if this is in an odd notation - for some reason it changes to appear this way when I knit the file.
+
 ## What is the average daily activity pattern?
 
 Here is the code for the time series plot of the average daily activity patterns:
@@ -110,5 +112,35 @@ The median number was **1.0766189\times 10^{4}**.
 
 Obviously, the mean value doesn't differ because my method for filling in NAs was just to replace them with the mean value. However, adding all those additional observations equal to the mean did influence the median - it is now the same as the mean.
 
+The main influence of imputing the missing data was to greatly increase the number of observations that matched the mean - this is evident in the increase in the first bin after 10000 on the histogram above.
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+First, create the factor.
+
+
+```r
+wkends <- c('Saturday', 'Sunday')
+updated_activity_data$wkfactor <- factor((weekdays(updated_activity_data$date) %in% wkends), levels=c(TRUE, FALSE), labels=c('weekend', 'weekday'))
+```
+
+Now use the factor to get the means for each group. Then merge them back together and add the factor back in.
+
+
+```r
+  q4_weekend_means <- aggregate(steps ~ interval, updated_activity_data[updated_activity_data$wkfactor == "weekend",], mean)
+  q4_weekend_means$wkfactor <- "weekend"
+  q4_weekday_means <- aggregate(steps ~ interval, updated_activity_data[updated_activity_data$wkfactor == "weekday",], mean)
+  q4_weekday_means$wkfactor <- "weekday"
+  q4_means <-rbind(q4_weekend_means, q4_weekday_means)
+```
+
+Finally, generate the panel plot:
+
+
+```r
+  panelPlot <- ggplot(q4_means, aes(x=interval, y=steps), xlab="Interval", ylab="Avg. Number of Steps Taken") + geom_line()
+  panelPlot <- panelPlot + facet_grid (wkfactor ~ .)
+```
+
+![](PA1_template_files/figure-html/showPanelPlot-1.png) 
